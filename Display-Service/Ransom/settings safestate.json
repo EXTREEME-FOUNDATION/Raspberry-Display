@@ -1,0 +1,23 @@
+{
+    "info":{
+        "version":0.4,
+        "author":"K.M [EXTREEME.corp]",
+        "description":"The Raspberry Pi Display Programm for linux."
+    },
+    "connection":{
+        "host-port":9079,
+        "client-ip":"192.168.1.192",
+        "client-port":2223,
+        "client-pwd":"coolespasswort0",
+        "retries":0
+    },
+    "client-settings":{
+        "heigh":720,
+        "width":1280,
+        "compression-scaling":2
+    },
+    "various":{
+        "style":"simple",
+        "show-notifications":true
+    }
+}

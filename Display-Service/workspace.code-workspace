@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../../../../sftp:host=192.168.1.192,user=pi/home/pi/Programmz"
+		}
+	],
+	"settings": {}
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=The Display python Service. made by KHALVAAN (EXTREEME.corp)
+
+[Service]
+Type=simple
+ExecStart=sudo /home/kelvin/Documents/Display-Service/Start.sh
+ExecStop=sudo killall python3
+
+[Install]
+WantedBy=multi-user.target
+
