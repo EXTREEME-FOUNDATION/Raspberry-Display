@@ -4,6 +4,7 @@
         "author":"K.M [EXTREEME.corp]",
         "description":"The standard Display Theme."
     },
+    "Error":{"type":"text","xy":[20,20],"text":"","color":[255,0,50],"font":["Norm",40],"id":999},
     "config":{
         "test":"lol"
     },

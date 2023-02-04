@@ -279,11 +279,12 @@ if __name__ == "__main__":
 			if isfunction(funct):
 				try:
 					_out = funct(frame)
-				except:
+				except Exception as D:
 					print(stl)
-					stl["items"].append({"type":"text","xy":[0,0],"text":f"Error:StyleFuncFailed","color":(255,50,0),"font":["Norm",20],"id":999})
+					stl["Error"]["text"] = str(D)
+					stl["items"].append(stl["Error"])
 					_out = (0,0,0,0,0,0,0,0,0,0,0,0,0)
-				logging.critical(type(_out))
+					logging.critical(f"Error in script: {str(D)}")
 				return _out
 			return funct
 
