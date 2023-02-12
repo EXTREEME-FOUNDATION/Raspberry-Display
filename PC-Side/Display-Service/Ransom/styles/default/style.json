@@ -4,7 +4,6 @@
         "author":"K.M [EXTREEME.corp]",
         "description":"The standard Display Theme."
     },
-    "Error":{"type":"text","xy":[20,20],"text":"","color":[255,0,50],"font":["Norm",40],"id":999},
     "config":{
         "test":"lol"
     },
@@ -45,8 +44,8 @@
         {"type":"form","form":"circ","xy":[640,890],"radius":510,"color":[0,200,200],"deg":"{%gpu_usage%}"},
         {"type":"form","form":"circ","xy":[1065,890],"radius":510,"color":[0,200,200],"deg":"{%ram_usage%}"},
         {"type":"form","form":"circ","xy":[0,0],"radius":100,"color":[0,200,200],"deg":"{%ram_usage%}"},
-        {"type":"img","xy":[0,0],"pic":"fg","scale":1}
+        {"type":"img","xy":[0,0],"pic":"fg","scale":1},
         
-        
+        {"type":"errormsg","xy":[20,20],"text":"","color":[255,0,50],"font":["Norm",20],"id":-999}
     ]
 }

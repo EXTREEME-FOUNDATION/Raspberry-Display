@@ -15,26 +15,34 @@ class call_func:
     lst=0
     refefe=20
     cgr=refefe
-    lastest=[0,0,0]
-    def dt(id,call):
+    lastest=[(0,0),(0,0),(0,0)]
+    errorvals={
+        "dt":"0:0:0 | 0.0.0",
+        "cpu_usage":(0,0),
+        "gpu_usage":(0,0),
+        "ram_usage":(0,0)
+    }
+    def __error__(func_name:str) -> any:
+        """Function for returning a default value if error in script occurs"""
+        return call_func.errorvals.get(func_name,0)
+    def dt(id,call) -> str:
         now = datetime.now()
         return now.strftime("%H:%M:%S | %d.%m.%y")
-    
-    def cpu_usage(id,call):
+    def cpu_usage(id,call) -> int:
         if call_func.cgr >= call_func.fps:
             call_func.lastest[0] = ext_func.perx((psutil.cpu_percent(),180+66,270+24))
         return call_func.lastest[0]
-    def gpu_usage(id,call):
+    def gpu_usage(id,call) -> int:
         if call_func.cgr >= call_func.fps:
             call_func.lastest[1] = ext_func.perx((GPUtil.getGPUs()[0].load*100,180+66,270+24))
         return call_func.lastest[1]
-    def ram_usage(id,call):
+    def ram_usage(id,call) -> int:
         if call_func.cgr >= call_func.fps:
             call_func.lastest[2] = ext_func.perx((psutil.virtual_memory().percent,180+66,270+24))
             call_func.cgr=0
         call_func.cgr+=1
         return call_func.lastest[2]
-    def frame(id,call):
+    def frame(id,call) -> str:
         if call_func.ekh.timer(1):
             call_func.fps= call - call_func.lst
             call_func.lst=call

@@ -75,7 +75,7 @@ if __name__ == "__main__":
 			with open("Ransom/settings.json","r") as c:
 				config=json.load(c)
 		except FileNotFoundError:
-			logging.critical("settings.json missing\nHALTING PROGRAM")
+			logging.critical(f"settings.json missing [{__file__}]\nHALTING PROGRAM")
 			exit()
 		except json.decoder.JSONDecodeError:
 			logging.critical("Setting.json corrupt\nHALTING PROGRAM")
@@ -102,6 +102,28 @@ if __name__ == "__main__":
 		def gettime(format) -> str:
 			now = datetime.now()
 			return now.strftime(format)
+
+		class insetfunc:
+			failed:bool=False
+			"""Creates an instance for calleble inserts"""
+			def __init__(s,func:callable,errfunc:callable,id:int) -> None:
+				s.func:callable=func
+				s.errfunc:callable=errfunc
+				s.id:int=id
+			def __call__(s,frame:int,faillist:dict={}) -> any:
+				try:
+					return s.func(id,frame)
+				except Exception as D:
+					if not s.failed:
+						s.failed=True
+						for x in range(len(faillist["items"])):
+							if faillist["items"][x]["type"] == "errormsg":
+								faillist["items"][x]["text"] += str(f"function \"{str(s)}\" failed at frame {frame}\n")
+						logging.critical(f"Error in script: {str(D)}")
+						print(faillist)
+					return s.errfunc(str(s))
+			def __str__(s):
+				return s.func.__name__
 
 		def load_styles():
 			pth="Ransom/styles/"
@@ -136,12 +158,14 @@ if __name__ == "__main__":
 									fnd=0
 									stylefuncmod = import_module(f"Ransom.styles.{x}.functions").call_func
 									stylefunc = getattr(stylefuncmod,curcom[1:])
+									errfunc = getattr(stylefuncmod,"__error__")
 									#lf=4
 									if "id" in hdt["items"][gve_id]:
 										lf=hdt["items"][gve_id]["id"]
 									else:
 										lf=gve_id
-									txt.append(lambda call,id=lf:stylefunc(id,call))
+									txt.append(insetfunc(stylefunc,errfunc,lf))
+									#txt.append(lambda call,id=lf:stylefunc(id,call))
 									txt.append("")
 									_t=1
 								elif fnd:
@@ -153,6 +177,9 @@ if __name__ == "__main__":
 							for z in txt:
 								if z == "":
 									txt.remove("")
+							
+							if len(txt) == 0:
+								txt = ""
 							return txt
 
 						for y in range(len(hdt["items"])):
@@ -160,6 +187,8 @@ if __name__ == "__main__":
 							if "text" in kdt:
 								#print(hdt["items"][y]["text"])
 								hdt["items"][y]["text"] = rep_ident(hdt["items"][y]["text"],y)
+								
+
 
 							if type(hdt["items"][y]["xy"]) == str:
 								hdt["items"][y]["xy"] = rep_ident(hdt["items"][y]["xy"],y)[0]
@@ -276,7 +305,7 @@ if __name__ == "__main__":
 		frame=0
 
 		def exe(funct,imd:ImageDraw):
-			if isfunction(funct):
+			"""if isfunction(funct):
 				try:
 					_out = funct(frame)
 				except Exception as D:
@@ -285,7 +314,10 @@ if __name__ == "__main__":
 					stl["items"].append(stl["Error"])
 					_out = (0,0,0,0,0,0,0,0,0,0,0,0,0)
 					logging.critical(f"Error in script: {str(D)}")
-				return _out
+				return _out"""
+			if isinstance(funct,insetfunc):
+				#print(stl)
+				funct = funct(frame,stl)
 			return funct
 
 		def RENDER():
@@ -303,7 +335,7 @@ if __name__ == "__main__":
 					if v["scale"] != 1:
 						_t = _t.resize((round(_t.width*v["scale"]),round(_t.height*v["scale"])))
 					image.paste(_t,v["xy"],_t)
-				elif tpe == "text":
+				elif tpe in ["text","errormsg"]:
 					out=""
 					for y in v["text"]:
 						if type(y) == str:
