@@ -1,2 +1,2 @@
-cd /home/kitsune/Program-Stuff/Projects/Raspi-Desktop/Disp_V2.0/Display-Service
+cd /home/kitsune/PROJECTS/Raspberry-Display/PC-Side/Display-Service
 python3 App.py --debug_mode
