@@ -1,3 +1,6 @@
+# This code is not up to date anymore, I'm keeping it tho just in case.
+# Also this only runs on linux and is completely broken.
+
 from logging import raiseExceptions
 import subprocess
 from time import sleep

@@ -1,3 +1,5 @@
+#this code is a mess
+
 import modules.HDMI_WRITE as HDMI_WRITE
 import modules.recv_handler as recv_handler
 import io
@@ -9,7 +11,7 @@ import logging
 #from Selfmade.Ransom import Usefull_stuff
 
 curimg = b""
-lastimg=b""
+lastimg = b""
 dispmes = (720,1280)
 
 #sdr = "/home/pi/Programmz/Display/"

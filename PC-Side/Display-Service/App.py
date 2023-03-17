@@ -1,12 +1,19 @@
+#Display whatever
+#	made by KHALVAAN aka kitsune
+# NOTE:
+#   Parts of this code are really old and have been written by me from 3 years ago.
+#	I don't take any responsebility for anything here, if you run this then any problems are your responebility
+#	The code is also extreemly ugly.
+
 import io
 import logging
-import Selfmade.Ransom as SRand
+import Ransom.modules.Selfmade.Ransom as SRand
 
-#			--LOGGING & INIT--
 
+# Decodes arg input.
 args = SRand.Usefull_stuff.arg_dec(args=["--debug_mode"],Valargs={"--style":""})
 
-#args["--debug_mode"]=True#OVERRIDE
+#args["--debug_mode"]=True # OVERRIDE #AV: why is this here?
 debug_level=logging.INFO
 
 if args["--debug_mode"]:
@@ -15,12 +22,12 @@ else:
 	logging.basicConfig(filename="Ransom/Log.txt",filemode='w+',format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',datefmt='%H:%M:%S',level=debug_level)
 
 def log(msg:str,basename:str="main",tbs:int=5):
+	# This Function is so dumb. I have no idea why i wrote this
 	_f = '\t'*tbs
 	return f"{basename}{_f}{msg}"
 
 logging.info(log("Program Started Started!","main",5))
 
-#			--LOGGING & INIT--
 
 logging.info(log("Starting Main imports","main",5))
 from time import sleep
@@ -42,6 +49,7 @@ logging.info(log("main imports finnished!","main",5))
 
 if __name__ == "__main__":
 
+	######################################################## This is a remenent from when i had notification for this stuff.
 
 	#ntThrd = notify_serv.start_thread()
 	#ptr = thrd.Thread(target=notify_serv._initalize,daemon=True)
@@ -54,7 +62,7 @@ if __name__ == "__main__":
 	Notification(
 		title='Display Service Started.',
 		description='Connection to the Display has been established',
-		icon_path='/home/kelvin/Pictures/btUP/EX-Logo_Alpha.png', # On Windows .ico is required, on Linux - .png
+		icon_path='--REDACTED--', # On Windows .ico is required, on Linux - .png
 		duration=5,                                   # Duration in seconds
 		urgency='normal',
 		app_name="Display-Service"
@@ -63,11 +71,6 @@ if __name__ == "__main__":
 
 	########################################################
 
-	#ntThrd = notify_serv.start_thread()
-
-
-	logging.info(log("Going into \"Code Start...\"","main",5))
-	# Code Start
 	try:
 		logging.info(log("loading config...",tbs=5))
 		config={}
@@ -81,31 +84,15 @@ if __name__ == "__main__":
 			logging.critical("Setting.json corrupt\nHALTING PROGRAM")
 			exit()
 		
-		def PILCirslice(ImgDraw,pos,radius,Filled,percent=(None)):
-			"""Draws a PIL Circleslice
-		
-			ImgDraw = [Pil.imageDraw]
-			pos = (x,y) [(int,int)]
-			radius = r [int]
-			Filled = (R,G,B) [(int,int,int)]
-			percent = (Percentage,Start,End)"""
-			#(percent,Start,end)
-			end = round((percent[2] - percent[1])*(percent[0]/100) + percent[1],0)
-			ImgDraw.pieslice((pos[0]-radius, pos[1]-radius, pos[0]+radius, pos[1]+radius), start=percent[1], end=end, fill=Filled)
 
-
-		selected="simple"
+		selected=config["various"]["style"]
 		styles={}
 
 		stl={}
 
-		def gettime(format) -> str:
-			now = datetime.now()
-			return now.strftime(format)
-
 		class insetfunc:
-			failed:bool=False
-			"""Creates an instance for calleble inserts"""
+			"""Creates an instance for calleble inserts (for the "renderer")"""
+			failed:bool=False # has the function failed to execute in the past?
 			def __init__(s,func:callable,errfunc:callable,id:int) -> None:
 				s.func:callable=func
 				s.errfunc:callable=errfunc
@@ -128,8 +115,8 @@ if __name__ == "__main__":
 		def load_styles():
 			pth="Ransom/styles/"
 			stldirs = listdir("Ransom/styles")
-			for x in stldirs:
-				try:
+			for x in stldirs: # Work for later: only load the selected style & not all in the directory
+				try:		  # P.S.: I don't feel like commenting this
 					erload=False
 					logging.info(log(f"loading style: {x}","main",5))
 					with open(pth+x+"/style.json","r") as s:
@@ -234,7 +221,7 @@ if __name__ == "__main__":
 		load_styles()
 		if selected not in styles.keys():
 			logging.warning(log(f"style \"{selected}\" has either faild loading or doesn't exist. Reverting to \"default style\"","main",5))
-			print(styles)
+			#print(styles)
 			if "default Style" not in styles.keys():
 				logging.critical(log(f"Couldn't revert back to default style because it is missing or has failed loading.\nHALTING PROGRAM","main",5))
 				exit()
@@ -249,7 +236,7 @@ if __name__ == "__main__":
 				return _fonts[(font,font_size)]
 			else:
 				logging.info(log(f"loading \"{font}\", {font_size}","main",5))
-				_fonts[(font,font_size)]=ImageFont.truetype(stl["path"]+stl["fonts"][font],font_size)
+				_fonts[(font,font_size)]=ImageFont.truetype(stl["path"]+stl["fonts"][font],font_size) # error correction?
 				return _fonts[(font,font_size)]
 
 
@@ -299,22 +286,11 @@ if __name__ == "__main__":
 		display=(config["client-settings"]["width"],config["client-settings"]["height"])
 		
 		#preimd = Image.new("RGBA",display,(0,0,0,0))
-		logging.debug(log("no error while loading disp-config."))
 		logging.debug(log("Basic setup complete. entering Main & rendering loop..."))
 
 		frame=0
 
 		def exe(funct,imd:ImageDraw):
-			"""if isfunction(funct):
-				try:
-					_out = funct(frame)
-				except Exception as D:
-					print(stl)
-					stl["Error"]["text"] = str(D)
-					stl["items"].append(stl["Error"])
-					_out = (0,0,0,0,0,0,0,0,0,0,0,0,0)
-					logging.critical(f"Error in script: {str(D)}")
-				return _out"""
 			if isinstance(funct,insetfunc):
 				#print(stl)
 				funct = funct(frame,stl)
