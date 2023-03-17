@@ -6,7 +6,7 @@ import Selfmade.Ransom as SRand
 
 args = SRand.Usefull_stuff.arg_dec(args=["--debug_mode"],Valargs={"--style":""})
 
-args["--debug_mode"]=True#OVERRIDE
+#args["--debug_mode"]=True#OVERRIDE
 debug_level=logging.INFO
 
 if args["--debug_mode"]:
@@ -429,20 +429,27 @@ if __name__ == "__main__":
 					datapacks.append(b[packsize[0]*x:(packsize[0]*(x+1))])
 			datapacks.append(b[packsize[0]*packs:])
 			#logging.info(f"{len(datapacks)},{len(b)}")
-			for x in datapacks:
-				s.send(len(x).to_bytes(2,"little"))
-				assert s.recv(10) == b"4"
-				s.send(x)
-				recv = s.recv(10)
-				if recv == b"1":
-					pass
-				elif recv == b"2":
-					s.close()
-					logging.info("connection closed by client.")
-					exit()
-				else:
-					logging.critical(f"Invalid data recvd. [{recv}]")
-			s.send(b"2")
+			try:
+				for x in datapacks:
+					s.send(len(x).to_bytes(2,"little"))
+					assert s.recv(10) == b"4"
+					s.send(x)
+					recv = s.recv(10)
+					if recv == b"1":
+						pass
+					elif recv == b"2":
+						s.close()
+						logging.info("connection closed by client.")
+						exit()
+					else:
+						logging.critical(f"Invalid data recvd. [{recv}]")
+				s.send(b"2")
+			except TimeoutError:
+				s.close()
+				s = connecttoraspi()
+				last=Image.new("RGBA",display,(0,0,0,0))
+				msk = Image.new("RGBA",display,(0,0,0,0))
+				ltd = Image.new("RGBA",display,(0,0,0,255))
 			#logging.info("lol3\n\n")
 			
 			#s.send(len(x).to_bytes(2,"little"))
