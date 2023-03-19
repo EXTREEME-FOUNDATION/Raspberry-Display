@@ -1,6 +1,0 @@
-{
-    "uuid": "Raspi-control@EXTREEME-FOUNDATION.com",
-    "name": "Raspi-connect",
-    "description": "control the Raspi Display via a mouse capturing Applet",
-    "icon": "EX-raspi-connect"
-}
