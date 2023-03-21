@@ -420,7 +420,7 @@ if __name__ == "__main__":
 					else:
 						logging.critical(f"Invalid data recvd. [{recv}]")
 				s.send(b"2")
-			except TimeoutError:
+			except TimeoutError or AssertionError:
 				s.close()
 				s = connecttoraspi()
 				last=Image.new("RGBA",display,(0,0,0,0))
@@ -454,5 +454,5 @@ if __name__ == "__main__":
 		#exit()
 		#raise Exception("endoffile")
 	except Exception as x:
-		logging.exception(log("Critical error occured.:\n\n","main",5),exc_info=True)
+		logging.exception(log(f"Critical error occured at {datetime.strftime('%d/%m/%Y %H:%M:%S')}.:\n\n","main",5),exc_info=True)
 		exit()
