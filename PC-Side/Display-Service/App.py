@@ -427,6 +427,7 @@ if __name__ == "__main__":
 						exit()
 					else:
 						logging.critical(f"Invalid data recvd. [{recv}]")
+						assert 1==0
 				s.send(b"2")
 			except TimeoutError or AssertionError:
 				s.close()
