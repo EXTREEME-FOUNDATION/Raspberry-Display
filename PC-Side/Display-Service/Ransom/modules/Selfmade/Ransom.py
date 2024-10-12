@@ -11,6 +11,8 @@ P.S.: from modern me:
     can't be bothered to rewrite this, so trash is what you get [be happy that some of the functions & classes even have documentation].
 P.P.S.: from me reading this code:
     God, this code is horrible. I'm sorry for anyone who has to read this
+P.P.P.S.: from me reading both prevoius notes:
+    If it works, don't fix it! (or something like that)
 """
 
 class Data:

@@ -292,7 +292,7 @@ if __name__ == "__main__":
 		display=(config["client-settings"]["width"],config["client-settings"]["height"])
 		
 		#preimd = Image.new("RGBA",display,(0,0,0,0))
-		logging.debug(log("Basic setup complete. entering Main & rendering loop..."))
+		logging.info(log("Basic setup complete. entering Main & rendering loop..."))
 
 		frame=0
 
@@ -417,7 +417,7 @@ if __name__ == "__main__":
 					s.send(len(x).to_bytes(2,"little"))
 					assert s.recv(10) == b"4"
 					s.send(x)
-					recv = s.recv(10)
+					recv = s.recv(10) # recieve control signal
 					if recv == b"1":
 						pass
 					elif recv == b"2":
@@ -426,10 +426,10 @@ if __name__ == "__main__":
 						logging.shutdown()
 						exit()
 					else:
-						logging.warning(f"Invalid data recvd. [{recv}], resetting Connection...")
-						assert 1==0
+						assert "unknown controll signal"==0
 				s.send(b"2")
-			except TimeoutError or AssertionError:
+			except (TimeoutError,AssertionError): # reset the connection
+				logging.warning(f"Timeout error / Invalid data recieved. resetting Connection...")
 				s.close()
 				s = connecttoraspi()
 				last=Image.new("RGBA",display,(0,0,0,0))
@@ -438,6 +438,8 @@ if __name__ == "__main__":
 			except:
 				s.close()
 				logging.critical(f"Unexpected error occured...",exc_info=True)
+				logging.shutdown()
+				exit()
 			#logging.info("lol3\n\n")
 			
 			#s.send(len(x).to_bytes(2,"little"))
