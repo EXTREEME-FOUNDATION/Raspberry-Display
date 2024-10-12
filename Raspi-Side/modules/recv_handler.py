@@ -60,7 +60,9 @@ def conn(connect):
                 rd=False
         except socket.error as e: #Error mit socket (startet verbindung neu)
             logging.warning(f"Connection error... {e}")
+            sleep(2)
             LS_connection_status = False
         except Exception as e: #Alles Andere (stopt application)
             logging.critical(f"Critical error in recv thread. {e}")
+            logging.shutdown()
             exit()

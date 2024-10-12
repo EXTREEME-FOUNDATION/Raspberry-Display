@@ -6,6 +6,7 @@ from PIL import Image
 import multiprocessing as mpr
 from time import sleep
 from ctypes import c_char_p as ch_str
+import logging
 
 defpath = "/home/pi/Desktop/PyTests/"
 
@@ -52,6 +53,7 @@ def Arrcon(img):
         sleep(0.05)
 
 if __name__ == "__main__":
+    logging.info("Started RECV")
     manager = mpr.Manager()
     subVar1 = manager.list([b"",1])
     subVar2 = manager.Value(ch_str,b"")

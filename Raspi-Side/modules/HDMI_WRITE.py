@@ -1,11 +1,13 @@
 import numpy as np
-
+import logging
 
 class Disp:
     def __init__(s,height,width,chanels):
+        logging.info("Instanciating Display")
         s.h,s.w,s.c = height,width,chanels
         s.height,s.width,s.chanels = height,width,chanels
         s.fb = np.memmap("/dev/fb0",dtype="uint8",mode="w+",shape=(s.h,s.w,s.c))
+        logging.info("Finished Init of Disp")
     def ShowImage(s,IMG):
         IMG = IMG.convert("RGBA")
         IMG = IMG.resize((s.w,s.h))
