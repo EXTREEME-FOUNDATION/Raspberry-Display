@@ -426,7 +426,7 @@ if __name__ == "__main__":
 						logging.shutdown()
 						exit()
 					else:
-						logging.critical(f"Invalid data recvd. [{recv}]")
+						logging.warning(f"Invalid data recvd. [{recv}], resetting Connection...")
 						assert 1==0
 				s.send(b"2")
 			except TimeoutError or AssertionError:
@@ -435,6 +435,9 @@ if __name__ == "__main__":
 				last=Image.new("RGBA",display,(0,0,0,0))
 				msk = Image.new("RGBA",display,(0,0,0,0))
 				ltd = Image.new("RGBA",display,(0,0,0,255))
+			except:
+				s.close()
+				logging.critical(f"Unexpected error occured...",exc_info=True)
 			#logging.info("lol3\n\n")
 			
 			#s.send(len(x).to_bytes(2,"little"))
