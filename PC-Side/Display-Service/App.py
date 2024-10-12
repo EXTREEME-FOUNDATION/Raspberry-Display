@@ -10,6 +10,7 @@ import logging
 import Ransom.modules.Selfmade.Ransom as SRand
 
 
+
 # Decodes arg input.
 args = SRand.Usefull_stuff.arg_dec(args=["--debug_mode"],Valargs={"--style":""})
 
@@ -79,9 +80,11 @@ if __name__ == "__main__":
 				config=json.load(c)
 		except FileNotFoundError:
 			logging.critical(f"settings.json missing [{__file__}]\nHALTING PROGRAM")
+			logging.shutdown()
 			exit()
 		except json.decoder.JSONDecodeError:
 			logging.critical("Setting.json corrupt\nHALTING PROGRAM")
+			logging.shutdown()
 			exit()
 		
 
@@ -107,7 +110,6 @@ if __name__ == "__main__":
 							if faillist["items"][x]["type"] == "errormsg":
 								faillist["items"][x]["text"] += str(f"function \"{str(s)}\" failed at frame {frame}\n")
 						logging.critical(f"Error in script: {str(D)}")
-						print(faillist)
 					return s.errfunc(str(s))
 			def __str__(s):
 				return s.func.__name__
@@ -224,6 +226,7 @@ if __name__ == "__main__":
 			#print(styles)
 			if "default Style" not in styles.keys():
 				logging.critical(log(f"Couldn't revert back to default style because it is missing or has failed loading.\nHALTING PROGRAM","main",5))
+				logging.shutdown()
 				exit()
 			selected="default Style"
 		logging.info(log(f"style \"{selected}\" selected and successfully loaded.","main",5))
@@ -232,13 +235,14 @@ if __name__ == "__main__":
 		_fonts={}
 		def get_font(font:str,font_size:int):
 			"""Loads fonts as they are needed. [Reconizes preused fonts and imediatly returns them]"""
+			global _fonts
 			if (font,font_size) in _fonts.keys():
 				return _fonts[(font,font_size)]
 			else:
 				logging.info(log(f"loading \"{font}\", {font_size}","main",5))
 				_fonts[(font,font_size)]=ImageFont.truetype(stl["path"]+stl["fonts"][font],font_size) # error correction?
+				#_fonts[(font,font_size)]=ImageFont.load_default()
 				return _fonts[(font,font_size)]
-
 
 
 		#NETWORK connect
@@ -272,6 +276,7 @@ if __name__ == "__main__":
 					except:
 						if config["connection"]["retries"] <= tryvar and config["connection"]["retries"] != 0:
 							logging.critical(f"couldn't connect to display raspi. Make sure correct adress and port are in the config file! Attemts:{tryvar}")
+							logging.shutdown()
 							exit()
 						logging.warning(log(f"Connection timed out. Attemt:{tryvar}"))
 						sleep(4)
@@ -279,6 +284,7 @@ if __name__ == "__main__":
 				return s
 			except ConnectionRefusedError:
 				logging.error("connection refused")
+				logging.shutdown()
 				exit()
 			
 		#s=connecttoraspi()
@@ -292,8 +298,8 @@ if __name__ == "__main__":
 
 		def exe(funct,imd:ImageDraw):
 			if isinstance(funct,insetfunc):
-				#print(stl)
 				funct = funct(frame,stl)
+					
 			return funct
 
 		def RENDER():
@@ -318,6 +324,7 @@ if __name__ == "__main__":
 							out+=y
 						else:
 							out+=y(frame)
+					#print(v["xy"],out,v["color"],get_font(v["font"][0],v["font"][1]),tpe,sep="    ||    ")
 					imd.text(v["xy"],out,v["color"],get_font(v["font"][0],v["font"][1]))
 				elif tpe == "form":
 					if v["form"] == "box":
@@ -375,7 +382,8 @@ if __name__ == "__main__":
 			r = last.convert('L').point(fn, mode='1')
 			r = Image.composite(ntd,msk,r)
 			r=r.resize((int(display[0]/config["client-settings"]["compression-scaling"]),int(display[1]/config["client-settings"]["compression-scaling"])))
-			#r.show()
+
+            #r.show()
 			#ntd.show()
 			#last.show()
 			ltd.paste(r,(0,0),r)
@@ -395,7 +403,6 @@ if __name__ == "__main__":
 			buf = io.BytesIO()
 			r.save(buf,format="png")
 			b = buf.getvalue()
-			
 			datapacks=[]
 			packsize=(1000,1000)
 			packs= int(len(b)/packsize[1])
@@ -416,6 +423,7 @@ if __name__ == "__main__":
 					elif recv == b"2":
 						s.close()
 						logging.info("connection closed by client.")
+						logging.shutdown()
 						exit()
 					else:
 						logging.critical(f"Invalid data recvd. [{recv}]")
@@ -455,4 +463,9 @@ if __name__ == "__main__":
 		#raise Exception("endoffile")
 	except Exception as x:
 		logging.exception(log(f"Critical error occured at {datetime.strftime('%d/%m/%Y %H:%M:%S')}.:\n\n","main",5),exc_info=True)
+		logging.shutdown()
 		exit()
+else:
+    logging.exception("Second Process Running...\nexiting...")
+    logging.shutdown()
+    exit()

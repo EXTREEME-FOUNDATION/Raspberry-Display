@@ -27,7 +27,8 @@ class call_func:
         return call_func.errorvals.get(func_name,0)
     def dt(id,call) -> str:
         now = datetime.now()
-        return now.strftime("%H:%M:%S | %d.%m.%y")
+        t = now.strftime("%H:%M:%S | %d.%m.%y")
+        return t
     def cpu_usage(id,call) -> int:
         if call_func.cgr >= call_func.fps:
             call_func.lastest[0] = ext_func.perx((psutil.cpu_percent(),180+66,270+24))
