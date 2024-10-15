@@ -246,6 +246,7 @@ if __name__ == "__main__":
 
 
 		#NETWORK connect
+		
 		def connecttoraspi():
 			try:
 				host=(config["connection"]["host-ip"],config["connection"]["host-port"])
@@ -412,6 +413,8 @@ if __name__ == "__main__":
 					datapacks.append(b[packsize[0]*x:(packsize[0]*(x+1))])
 			datapacks.append(b[packsize[0]*packs:])
 			#logging.info(f"{len(datapacks)},{len(b)}")
+			FailedAttemts=0
+			LastFailedAttempt = datetime.hour
 			try:
 				for x in datapacks:
 					s.send(len(x).to_bytes(2,"little"))
@@ -428,8 +431,16 @@ if __name__ == "__main__":
 					else:
 						assert "unknown controll signal"==0
 				s.send(b"2")
-			except (TimeoutError,AssertionError): # reset the connection
-				logging.warning(f"Timeout error / Invalid data recieved. resetting Connection...")
+			except (TimeoutError,AssertionError,ConnectionResetError): # reset the connection
+				if (FailedAttemts >= 1) and (datetime.hour - LastFailedAttempt)>=2: #depends on Time (midnight reset)
+					FailedAttemts = 0
+				FailedAttemts+=1
+				LastFailedAttempt = datetime.hour
+				if FailedAttemts >= 5:
+					logging.critical("Exeeded maximum Failed Attempts for reconnection. Exeting...")
+					logging.shutdown()
+					exit()
+				logging.warning(f"Timeout error / Invalid data recieved / ConnectionResetError. resetting Connection...")
 				s.close()
 				s = connecttoraspi()
 				last=Image.new("RGBA",display,(0,0,0,0))
