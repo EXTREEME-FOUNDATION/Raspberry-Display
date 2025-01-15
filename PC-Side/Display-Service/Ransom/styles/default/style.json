@@ -5,7 +5,8 @@
         "description":"The standard Display Theme."
     },
     "config":{
-        "test":"lol"
+        "test":"lol",
+        "Location":[48.1969,14.0978]
     },
     "colors":{
         "bg":"#f1111",
@@ -15,24 +16,8 @@
         "bg":"bg.png",
         "fg":"fg.png",
         "EX-Logo":"EXL.png",
-        "1":"Portal/1.png",
-        "2":"Portal/2.png",
-        "3":"Portal/3.png",
-        "4":"Portal/4.png",
-        "5":"Portal/5.png",
-        "6":"Portal/6.png",
-        "7":"Portal/7.png",
-        "8":"Portal/8.png",
-        "9":"Portal/9.png",
-        "10":"Portal/10.png",
-        "11":"Portal/11.png",
-        "12":"Portal/12.png",
-        "13":"Portal/13.png",
-        "14":"Portal/14.png",
-        "15":"Portal/15.png",
-        "16":"Portal/16.png",
-        "17":"Portal/17.png",
-        "18":"Portal/18.png"
+        "Portals":"Portal",
+        "WeatherIcons":"symbols"
     },
     "fonts":{
         "Norm":"NORM.ttf"
@@ -45,6 +30,11 @@
         {"type":"form","form":"circ","xy":[1065,890],"radius":510,"color":[0,200,200],"deg":"{%ram_usage%}"},
         {"type":"form","form":"circ","xy":[0,0],"radius":100,"color":[0,200,200],"deg":"{%ram_usage%}"},
         {"type":"img","xy":[0,0],"pic":"fg","scale":1},
+        {"type":"text","xy":[595,10],"text":"{%dayshort%}","color":[0,150,150],"font":["Norm",40],"id":1},
+        {"type":"text","xy":[995,210],"text":"{%weatherInf%}","color":[0,150,150],"font":["Norm","{%weatherSize%}"],"id":2,"execEvery":3600},
+        {"type":"img","xy":[20,20],"pic":"{%weatherPic%}","scale":0.5,"execEvery":3600,"id":3},
+        {"type":"img","xy":[138,138],"pic":"{%weatherPic%}","scale":0.25,"execEvery":3600,"id":4},
+        
         
         {"type":"errormsg","xy":[20,20],"text":"","color":[255,0,50],"font":["Norm",20],"id":-999}
     ]

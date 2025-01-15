@@ -7,6 +7,8 @@
 
 import io
 import logging
+from operator import contains
+import time
 import Ransom.modules.Selfmade.Ransom as SRand
 
 
@@ -45,6 +47,7 @@ from datetime import datetime
 import os
 from importlib import import_module
 from inspect import isfunction,isbuiltin
+import re
 #import numpy as np
 logging.info(log("main imports finnished!","main",5))
 
@@ -96,20 +99,35 @@ if __name__ == "__main__":
 		class insetfunc:
 			"""Creates an instance for calleble inserts (for the "renderer")"""
 			failed:bool=False # has the function failed to execute in the past?
-			def __init__(s,func:callable,errfunc:callable,id:int) -> None:
+			starttime=0
+			timewt=0
+			def __init__(s,func:callable,errfunc:callable,id:int,timewt=0) -> None:
 				s.func:callable=func
 				s.errfunc:callable=errfunc
 				s.id:int=id
+				s.cached_val=s(0)
+				s.timewt=timewt
+				if timewt != 0:
+					s.starttime=time.monotonic()
+				else:
+					s.starttime=0
+
 			def __call__(s,frame:int,faillist:dict={}) -> any:
 				try:
-					return s.func(id,frame)
+					if time.monotonic()-s.starttime >= s.timewt:
+						s.starttime=time.monotonic()
+						s.cached_val=s.func(s.id,frame)
+					return s.cached_val
 				except Exception as D:
 					if not s.failed:
 						s.failed=True
+						if len(faillist)==0:
+							logging.critical(f"Error in script: {str(D)}, before faillist was created (Frame 0)",exc_info=True)
+							return s.errfunc(str(s))
 						for x in range(len(faillist["items"])):
 							if faillist["items"][x]["type"] == "errormsg":
 								faillist["items"][x]["text"] += str(f"function \"{str(s)}\" failed at frame {frame}\n")
-						logging.critical(f"Error in script: {str(D)}")
+						logging.critical(f"Error in script: {str(D)}",exc_info=True)
 					return s.errfunc(str(s))
 			def __str__(s):
 				return s.func.__name__
@@ -122,16 +140,35 @@ if __name__ == "__main__":
 					erload=False
 					logging.info(log(f"loading style: {x}","main",5))
 					with open(pth+x+"/style.json","r") as s:
-						hdt = json.load(s)
+						hdt:dict = json.load(s)
 						hdt["path"]=pth+x+"/"
-						for y in hdt["pics"].keys():
-							hdt["pics"][y] = Image.open(hdt["path"]+hdt["pics"][y])
+						kt = dict.copy(hdt["pics"])
+						for y in kt.keys():
+							if os.path.isfile(hdt["path"]+hdt["pics"][y]):
+								hdt["pics"][y] = Image.open(hdt["path"]+hdt["pics"][y])
+							elif os.path.isdir(hdt["path"]+hdt["pics"][y]):
+								dirloc = hdt["path"]+hdt["pics"][y]
+								dircont = listdir(dirloc)
+								for z in dircont:
+									fileReg = re.sub(".[1-9a-z]+$","",z)
+									fileEnd = re.findall(".[1-9a-z]+$",z)
+									if len(fileEnd) == 0: logging.info(log(f"Skipped File \"{z}\" in \"{y}\" because it has no file extension."));continue
+									fileEnd = fileEnd[0]
+									if not os.path.isfile(dirloc+"/"+z): logging.info(log(f"Skipped Folder \"{z}\" in \"{y}\" because it is not a file."));continue
+									if not fileEnd in [".png", ".jpg", ".jpeg", ".svg"]: logging.info(log(f"Skipped File \"{z}\" in \"{y}\" because it is not a supported file type."));continue
+									hdt["pics"][y+"/"+fileReg] = Image.open(dirloc+"/"+fileReg+fileEnd) # strip end of filename
 						
 						for y in hdt["fonts"].values():
 							if not os.path.isfile(f"Ransom/styles/{x}/{y}"):
 								logging.warning(log(f"Font \"{y}\" does not exist on specified location."))
 								erload=True
-
+						module = import_module(f"Ransom.styles.{x}.functions")
+						print(list(hdt.keys()))
+						if("config" in list(hdt.keys())):
+							logging.info(log(f"loading style \"{x}\" with config","main",5))
+							module.__entry__(hdt["config"])
+						else:
+							module.__entry__()
 						def rep_ident(inp:str,gve_id:int):
 							fnd=0
 							curcom=""
@@ -145,7 +182,7 @@ if __name__ == "__main__":
 									fnd=1
 								elif inptxt[z:z+2] == "%}" and fnd:
 									fnd=0
-									stylefuncmod = import_module(f"Ransom.styles.{x}.functions").call_func
+									stylefuncmod = module.call_func
 									stylefunc = getattr(stylefuncmod,curcom[1:])
 									errfunc = getattr(stylefuncmod,"__error__")
 									#lf=4
@@ -153,7 +190,11 @@ if __name__ == "__main__":
 										lf=hdt["items"][gve_id]["id"]
 									else:
 										lf=gve_id
-									txt.append(insetfunc(stylefunc,errfunc,lf))
+									if "execEvery" in hdt["items"][gve_id]:
+										timewt=hdt["items"][gve_id]["execEvery"]
+									else:
+										timewt=0
+									txt.append(insetfunc(stylefunc,errfunc,lf,timewt))
 									#txt.append(lambda call,id=lf:stylefunc(id,call))
 									txt.append("")
 									_t=1
@@ -192,6 +233,15 @@ if __name__ == "__main__":
 								if hdt["items"][y]["font"][0] not in hdt["fonts"].keys():
 									logging.warning(log(f"Font \"{y}\" is not loaded [fonts have to be added to \"fonts\" section before use]"))
 									erload=True
+									return
+								if type(hdt["items"][y]["font"][1]) != int:
+									rt = rep_ident(hdt["items"][y]["font"][1],y)
+									if rt == "":
+										logging.warning(log(f"Font size for \"{y}\" is not a number"))
+										erload=True
+										return
+									else:
+										hdt["items"][y]["font"][1] = rt[0]
 							if "pic" in kdt:
 								hdt["items"][y]["pic"] = rep_ident(hdt["items"][y]["pic"],y)[0]
 							if "deg" in kdt:
@@ -326,7 +376,7 @@ if __name__ == "__main__":
 						else:
 							out+=y(frame)
 					#print(v["xy"],out,v["color"],get_font(v["font"][0],v["font"][1]),tpe,sep="    ||    ")
-					imd.text(v["xy"],out,v["color"],get_font(v["font"][0],v["font"][1]))
+					imd.text(v["xy"],out,v["color"],get_font(v["font"][0],exe(v["font"][1],imd)))
 				elif tpe == "form":
 					if v["form"] == "box":
 						imd.rectangle((v["xy"]),tuple(v["size"])),v["color"],tuple(v["border"])
@@ -479,7 +529,7 @@ if __name__ == "__main__":
 		#exit()
 		#raise Exception("endoffile")
 	except Exception as x:
-		logging.exception(log(f"Critical error occured at {datetime.strftime('%d/%m/%Y %H:%M:%S')}.:\n\n","main",5),exc_info=True)
+		logging.exception(log(f"Critical error occured at {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}.:\n\n","main",5),exc_info=True)
 		logging.shutdown()
 		exit()
 else:
