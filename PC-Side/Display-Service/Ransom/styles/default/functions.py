@@ -13,6 +13,7 @@ import meteostat
 import logging
 import pandas as pd
 
+#logging = logging.getLogger(__name__)
 config={}
 
 class ext_func:
@@ -71,8 +72,8 @@ class ext_func:
                 dataYear[x][y] = round(dataYear[x][y],2)
 
 
-        LastUpdatedWeatherInfo = datetime.now()
-        cachedWeatherInfo = dataYear
+        ext_func.LastUpdatedWeatherInfo = datetime.now()
+        ext_func.cachedWeatherInfo = dataYear
         logging.info(f"DONE: Weather-Info updated")
         return dataYear
 
@@ -80,6 +81,7 @@ def __entry__(ent_config:str) -> None:
     global config
     logging.info("Loading Module: functions.py")
     config = ent_config
+    ext_func.cachedTime = datetime.now()
 
 
 
@@ -104,7 +106,9 @@ class call_func:
         "rainbow":(0,0,0),
         "mv":(0,0),
         "Portal":"Portal/1",
-        "weatherInf":"N/A"
+        "weatherInf":"N/A",
+        "weatherSize":26,
+        "weatherPic":"WeatherIcons/2682803_weather_exclamation_attention_mark_erro_warn_warning"
     }
     def __error__(func_name:str) -> any:
         """Function for returning a default value if error in script occurs"""
@@ -118,12 +122,12 @@ class call_func:
     def weatherInf(id,call) -> str:
         weather = ext_func.updateWeatherInfo()
         Items = 3
-        out = f"Temp:{weather["temp"]["value"]}°C\nmax:{weather["temp"]["tmax"]}°C\nmin:{weather["temp"]["tmin"]}°C"
+        out = f"Temp: {weather["temp"]["value"]}°C\nmax: {weather["temp"]["tmax"]}°C\nmin: {weather["temp"]["tmin"]}°C"
         if weather["prcp"]["value"] > weather["prcp"]["LightRainLimit"]:
-            out += f"\nRain:{weather["prcp"]["value"]}mm"
+            out += f"\nRain: {weather["prcp"]["value"]}mm"
             Items+=1
         if weather["snow"]["value"] > weather["snow"]["LightSnowLimit"]:
-            out += f"\nSnow:{weather["snow"]["value"]}mm"
+            out += f"\nSnow: {weather["snow"]["value"]}mm"
             Items+=1
         call_func.weatherShownItems = Items
         return out

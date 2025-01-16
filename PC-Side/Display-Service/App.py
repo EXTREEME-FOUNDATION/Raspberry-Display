@@ -12,17 +12,23 @@ import time
 import Ransom.modules.Selfmade.Ransom as SRand
 
 
+logging.getLogger("PIL.PngImagePlugin").setLevel(logging.CRITICAL + 1)
 
 # Decodes arg input.
-args = SRand.Usefull_stuff.arg_dec(args=["--debug_mode"],Valargs={"--style":""})
+args = SRand.Usefull_stuff.arg_dec(args=["--debug_mode","--debug_in_term"],Valargs={"--style":""})
 
 #args["--debug_mode"]=True # OVERRIDE #AV: why is this here?
 debug_level=logging.INFO
-
-if args["--debug_mode"]:
+if args["--debug_in_term"]:
+	if args["--debug_mode"]:
+		debug_level=logging.DEBUG
 	logging.basicConfig(format='%(asctime)s,%(msecs)d\t%(name)s\t%(levelname)s\t%(message)s',datefmt='%H:%M:%S',level=debug_level)
 else:
+	if args["--debug_mode"]:
+		debug_level=logging.DEBUG
 	logging.basicConfig(filename="Ransom/Log.txt",filemode='w+',format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',datefmt='%H:%M:%S',level=debug_level)
+
+
 
 def log(msg:str,basename:str="main",tbs:int=5):
 	# This Function is so dumb. I have no idea why i wrote this
@@ -30,7 +36,6 @@ def log(msg:str,basename:str="main",tbs:int=5):
 	return f"{basename}{_f}{msg}"
 
 logging.info(log("Program Started Started!","main",5))
-
 
 logging.info(log("Starting Main imports","main",5))
 from time import sleep
@@ -48,6 +53,7 @@ import os
 from importlib import import_module
 from inspect import isfunction,isbuiltin
 import re
+from math import floor
 #import numpy as np
 logging.info(log("main imports finnished!","main",5))
 
@@ -114,9 +120,13 @@ if __name__ == "__main__":
 
 			def __call__(s,frame:int,faillist:dict={}) -> any:
 				try:
-					if time.monotonic()-s.starttime >= s.timewt:
-						s.starttime=time.monotonic()
-						s.cached_val=s.func(s.id,frame)
+					if s.timewt!=0: 
+						if time.monotonic()-s.starttime >= s.timewt:
+							s.starttime=time.monotonic()
+							s.cached_val=s.func(s.id,frame)
+					else:
+						d = s.func(s.id,frame)
+						return d
 					return s.cached_val
 				except Exception as D:
 					if not s.failed:
@@ -163,7 +173,6 @@ if __name__ == "__main__":
 								logging.warning(log(f"Font \"{y}\" does not exist on specified location."))
 								erload=True
 						module = import_module(f"Ransom.styles.{x}.functions")
-						print(list(hdt.keys()))
 						if("config" in list(hdt.keys())):
 							logging.info(log(f"loading style \"{x}\" with config","main",5))
 							module.__entry__(hdt["config"])
@@ -189,7 +198,7 @@ if __name__ == "__main__":
 									if "id" in hdt["items"][gve_id]:
 										lf=hdt["items"][gve_id]["id"]
 									else:
-										lf=gve_id
+										lf=None
 									if "execEvery" in hdt["items"][gve_id]:
 										timewt=hdt["items"][gve_id]["execEvery"]
 									else:
@@ -350,7 +359,9 @@ if __name__ == "__main__":
 		def exe(funct,imd:ImageDraw):
 			if isinstance(funct,insetfunc):
 				funct = funct(frame,stl)
-					
+			elif type(funct) == list and len(funct) > 1:
+				for x in range(len(funct)):
+					funct[x] = exe(funct[x],imd)
 			return funct
 
 		def RENDER():
@@ -364,11 +375,14 @@ if __name__ == "__main__":
 					v[y]=exe(x[y],imd)
 				tpe=v["type"]
 				if tpe   == "img":
-					_t = stl["pics"][v["pic"]]
+					logging.debug(log(f"loading image: {v['pic']}@{v["xy"]} with scale:{v["scale"]}","main",5))
+					_t:Image.Image = stl["pics"][v["pic"]].convert("RGBA")
 					if v["scale"] != 1:
-						_t = _t.resize((round(_t.width*v["scale"]),round(_t.height*v["scale"])))
+						logging.debug(log(f"\t\trezising image from {_t.width} x {_t.height} to {floor(_t.width*v["scale"])} x {floor(_t.height*v["scale"])}"))
+						_t = _t.resize((floor(_t.width*v["scale"]),floor(_t.height*v["scale"])))
 					image.paste(_t,v["xy"],_t)
 				elif tpe in ["text","errormsg"]:
+					logging.debug(log(f"loading text: {v['text']}@{v["xy"]} with font:{v["font"][0]}@{v["font"][1]} with color:{v['color']}","main",5))
 					out=""
 					for y in v["text"]:
 						if type(y) == str:
@@ -376,11 +390,13 @@ if __name__ == "__main__":
 						else:
 							out+=y(frame)
 					#print(v["xy"],out,v["color"],get_font(v["font"][0],v["font"][1]),tpe,sep="    ||    ")
-					imd.text(v["xy"],out,v["color"],get_font(v["font"][0],exe(v["font"][1],imd)))
+					imd.text(v["xy"],out,v["color"],get_font(v["font"][0],v["font"][1])) #exe(v["front"][1],imd)))
 				elif tpe == "form":
 					if v["form"] == "box":
+						logging.debug(log(f"loading form: {v['form']}@{v["xy"]} with dim:{v["size"]},color:{v["color"]},border:{v['border']}","main",5))
 						imd.rectangle((v["xy"]),tuple(v["size"])),v["color"],tuple(v["border"])
 					elif v["form"] == "circ":
+						logging.debug(log(f"loading form: {v['form']}@{v["xy"]} with radius:{v["radius"]},color:{v["color"]},deg:{v['deg']}","main",5))
 						rd=v["radius"]
 						deg=v["deg"]
 						pot=v["xy"]
@@ -416,10 +432,20 @@ if __name__ == "__main__":
 
 		s=connecttoraspi()
 		Tmr = SRand.Usefull_stuff.Timer()
+		FailedRenders=0
 		while True:
+			if FailedRenders >= 10:
+				logging.critical("Exeeded maximum Failed Renders. Exeting...")
+				logging.shutdown()
+				exit()
 			Tmr.reset()
 			#RENDER().show()
-			ntd=RENDER()
+			try:
+				ntd=RENDER()
+			except Exception as x:
+				logging.error(log(f"Render failed @Frame:{frame},\n","main",5),exc_info=True)
+				FailedRenders+=1
+				ntd = Image.new("RGBA",display,(0,0,0,0))
 			#disp.show(ntd)
 			#continue
 			last = ImageChops.difference(ntd,last)
